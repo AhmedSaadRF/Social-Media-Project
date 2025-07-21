@@ -2,7 +2,7 @@ setUpUI();
 
 const baseURL = "https://tarmeezacademy.com/api/v1";
 
-axios.get(baseURL + "/posts?limit=3").then((response) => {
+axios.get(baseURL + "/posts?limit=30").then((response) => {
   const posts = response.data.data;
   document.getElementById("posts").innerHTML = "";
 
@@ -31,7 +31,7 @@ axios.get(baseURL + "/posts?limit=3").then((response) => {
           <h5>${postTitle}</h5>
           <p>${post.body}</p>
           <hr />
-          <div>
+          <div style="display: flex; align-items: center;">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -42,12 +42,28 @@ axios.get(baseURL + "/posts?limit=3").then((response) => {
             >
               <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z" />
             </svg>
-            <span>(${post.comments_count}) Comments</span>
+            <span style="display: flex; align-items: center;">
+              (${post.comments_count}) Comments
+              <span style="margin-left: 10px; display: flex; gap: 5px;" id="postTags-${post.id}"></span>
+            </span>
           </div>
         </div>
       </div>
     `;
     document.getElementById("posts").innerHTML += content;
+    const postTagsId = document.getElementById(`postTags-${post.id}`);
+
+    for (const tag of post.tags) {
+      if (tag.name == null) {
+        continue;
+      }
+      let tagsContent = `
+        <button class="btn btn-sm rounded-5" style="background-color: gray; color: white;">
+          ${tag.name}
+        </button>
+      `;
+      postTagsId.innerHTML += tagsContent;
+    }
   }
 });
 
@@ -77,6 +93,32 @@ function login() {
     });
 }
 
+function register() {
+  const name = document.getElementById("reg-name").value;
+  const username = document.getElementById("reg-username").value;
+  const password = document.getElementById("reg-password").value;
+  const url = baseURL + "/register";
+  const params = {
+    name: name,
+    username: username,
+    password: password,
+  };
+  axios
+    .post(url, params)
+    .then((response) => {
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      const modal = document.getElementById("registerModal");
+      const modalInstance = bootstrap.Modal.getInstance(modal);
+      modalInstance.hide();
+      localStorage.setItem("showRegisterSuccess", "true");
+      window.location.reload();
+    })
+    .catch((error) => {
+      showErrorMessage("Registration failed! Please try again.");
+    });
+}
+
 function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
@@ -91,7 +133,7 @@ function showSuccessMessage(message, type) {
   setTimeout(() => {
     alertPlaceholder.style.display = "none";
     alertPlaceholder.innerHTML = "";
-  }, 5000);
+  }, 3000);
 
 }
 
@@ -102,17 +144,7 @@ function showErrorMessage(message) {
   setTimeout(() => {
     alertPlaceholder.style.display = "none";
     alertPlaceholder.innerHTML = "";
-  }, 5000);
-}
-
-function showLogoutMessage(message) {
-  const alertPlaceholder = document.getElementById("logoutAlert");
-  alertPlaceholder.style.display = "block";
-  alertPlaceholder.innerHTML = `<span style='display:inline-block; vertical-align:middle;'><svg width='24' height='24' fill='#1976d2' style='margin-right:8px;vertical-align:middle;' viewBox='0 0 16 16'><path d='M6.5 1a.5.5 0 0 1 .5.5V8h4.293l-1.147-1.146a.5.5 0 1 1 .708-.708l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 1 1-.708-.708L11.293 9H7v6.5a.5.5 0 0 1-1 0v-14z'/></svg></span><span style='vertical-align:middle;'>${message}</span>`;
-  setTimeout(() => {
-    alertPlaceholder.style.display = "none";
-    alertPlaceholder.innerHTML = "";
-  }, 5000);
+  }, 3000);
 }
 
 function setUpUI() {
@@ -135,12 +167,25 @@ function setUpUI() {
     showSuccessMessage("Login successful!", "success");
     localStorage.removeItem("showLoginSuccess");
   }
-
-  // Show logout alert after reload
+  // Show register success alert after reload
+  if (localStorage.getItem("showRegisterSuccess") === "true") {
+    showSuccessMessage("Registration successful! Welcome!", "success");
+    localStorage.removeItem("showRegisterSuccess");
+  }
   if (localStorage.getItem("showLogoutAlert") === "true") {
     showLogoutMessage("You have been logged out successfully.");
     localStorage.removeItem("showLogoutAlert");
   }
+}
+
+function showLogoutMessage(message) {
+  const alertPlaceholder = document.getElementById("logoutAlert");
+  alertPlaceholder.style.display = "block";
+  alertPlaceholder.innerHTML = `<span style='display:inline-block; vertical-align:middle;'><svg width='24' height='24' fill='#1976d2' style='margin-right:8px;vertical-align:middle;' viewBox='0 0 24 24'><path d='M16 13v-2H7V8l-5 4 5 4v-3zM20 3h-8v2h8v14h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z'/></svg></span><span style='vertical-align:middle;'>${message}</span>`;
+  setTimeout(() => {
+    alertPlaceholder.style.display = "none";
+    alertPlaceholder.innerHTML = "";
+  }, 3000);
 }
 
 
