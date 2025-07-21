@@ -25,9 +25,12 @@
   <div id="errorAlert"
     style="display: none; position: fixed; top: 100px; left: 50%; transform: translateX(-50%); z-index: 2000; min-width: 320px; max-width: 90vw; box-shadow: 0 6px 24px rgba(0,0,0,0.18); border-radius: 24px; background: #fff; padding: 1rem 2rem; font-size: 1.1rem; font-weight: 500; color: #d32f2f; border: 2px solid #d32f2f; text-align: center; transition: opacity 0.4s cubic-bezier(.25,.8,.25,1); opacity: 0.98; letter-spacing: 0.5px; backdrop-filter: blur(4px);">
   </div>
+  <div id="logoutAlert"
+    style="display: none; position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 2000; min-width: 320px; max-width: 90vw; box-shadow: 0 8px 32px rgba(25,118,210,0.18); border-radius: 24px; background: linear-gradient(90deg, #e3f2fd 0%, #bbdefb 100%); padding: 1rem 2rem; font-size: 1.1rem; font-weight: 500; color: #1976d2; border: 2px solid #1976d2; text-align: center; transition: opacity 0.4s cubic-bezier(.25,.8,.25,1); opacity: 0.98; letter-spacing: 0.5px; backdrop-filter: blur(4px);">
+  </div>
   <!-- Alerts -->
 
-  <!-- Modals --> 
+  <!-- Modals -->
   <!-- Login Modal -->
   <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -56,6 +59,38 @@
     </div>
   </div>
   <!-- Login Modal -->
+  <!-- Register Modal -->
+  <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Register</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="mb-3">
+              <label for="recipient-name" class="col-form-label">name:</label>
+              <input type="text" class="form-control" id="reg-name">
+            </div>
+            <div class="mb-3">
+              <label for="recipient-name" class="col-form-label">Username:</label>
+              <input type="text" class="form-control" id="reg-username">
+            </div>
+            <div class="mb-3">
+              <label for="message-text" class="col-form-label">Password:</label>
+              <input type="password" class="form-control" id="reg-password">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="register()">Register</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Register Modal -->
   <!-- Modals -->
 
   <!-- Navbar Container -->
@@ -85,7 +120,8 @@
                   data-bs-target="#loginModal">
                   Login
                 </button>
-                <button id="registerBtn" type="button" class="btn btn-outline-success">
+                <button id="registerBtn" type="button" class="btn btn-outline-success" data-bs-toggle="modal"
+                  data-bs-target="#registerModal">
                   Register
                 </button>
                 <button onclick="logout()" id="logoutBtn" type="button" class="btn btn-outline-danger mx-2">
@@ -108,35 +144,6 @@
       <div class="col-9">
         <div id="posts">
           <!-- Post -->
-          <div class="card shadow rounded" style="margin-top: 30px">
-            <div class="card-header">
-              <img src="./assets/profile.png" alt="Profile Image" class="rounded-circle border border-2"
-                style="width: 40px; height: 40px" />
-              <b>@RFRF</b>
-            </div>
-            <div class="card-body">
-              <img src="./assets/img1.jpg" alt="Post Image" class="w-100" />
-              <h6 class="mt-1" style="color: rgb(193, 193, 193)">
-                2 min ago
-              </h6>
-              <h5>Hello World</h5>
-              <p>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Recusandae, tenetur! Voluptas dolor possimus repellendus eius.
-                Illum ea perferendis debitis voluptatum sit dolorem.
-                Voluptatem vero mollitia sit, molestiae sequi aspernatur ad?
-              </p>
-              <hr />
-              <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen"
-                  viewBox="0 0 16 16">
-                  <path
-                    d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z" />
-                </svg>
-                <span>(3) Comments</span>
-              </div>
-            </div>
-          </div>
           <!-- Post -->
         </div>
       </div>
