@@ -29,6 +29,14 @@ function getPosts(page = 1) {
       if (post.title != null) {
         postTitle = post.title;
       }
+      let user = getCurrentUser();
+      let isMyPost = user != null && user.id == author.id;
+      let editButtonContent = "";
+      if (isMyPost) {
+        editButtonContent = `
+        <button class="btn btn-sm btn-primary ms-2 float-end px-3" onclick="editPost('${encodeURIComponent(JSON.stringify(post))}')">Edit</button>
+        `;
+      }
       let content = `
       <div class="card shadow rounded" style="margin-top: 30px">
         <div class="card-header">
@@ -39,6 +47,7 @@ function getPosts(page = 1) {
             style="width: 40px; height: 40px"
           />
           <b>${author.username}</b>
+          ${editButtonContent}
         </div>
         <div class="card-body" onclick="postClicked(${post.id})" style="cursor: pointer;">
           <img src="${post.image}" alt="Post Image" class="w-100" />
@@ -229,11 +238,14 @@ function showLogoutMessage(message) {
 }
 
 function addPost() {
+  const postId = document.getElementById("post-id-input").value;
+  let isCreate = postId == null || postId == "";
+
   const title = document.getElementById("add-post-title").value.trim();
   const body = document.getElementById("add-post-body").value.trim();
   const imageInput = document.getElementById("add-post-image");
   const image = imageInput && imageInput.files.length > 0 ? imageInput.files[0] : null;
-  const url = baseURL + "/posts";
+  let url = ``;
   let errorMsg = "";
   if (!title) {
     errorMsg += "Title is required. ";
@@ -259,32 +271,64 @@ function addPost() {
     "Content-Type": "multipart/form-data",
     Authorization: `Bearer ${token}`,
   };
-  axios
-    .post(url, formData, { headers: headers })
-    .then((response) => {
-      const modal = document.getElementById("addPostModal");
-      const modalInstance = bootstrap.Modal.getInstance(modal);
-      modalInstance.hide();
-      showSuccessMessage("Post created successfully!", "success");
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000); // Wait 1.5 seconds before reloading
-    })
-    .catch((error) => {
-      if (error.response && error.response.data && error.response.data.message) {
-        showErrorMessage("Post creation failed: " + error.response.data.message);
-      } else if (error.response && error.response.data && error.response.data.errors) {
-        // Show validation errors from API
-        let apiErrors = error.response.data.errors;
-        let details = "";
-        if (apiErrors.title) details += "Title: " + apiErrors.title.join(", ") + " ";
-        if (apiErrors.body) details += "Body: " + apiErrors.body.join(", ") + " ";
-        if (apiErrors.image) details += "Image: " + apiErrors.image.join(", ") + " ";
-        showErrorMessage("Post creation failed! " + details.trim());
-      } else {
-        showErrorMessage("Post creation failed! Please try again.");
-      }
-    });
+  if (isCreate) {
+    url = baseURL + "/posts";
+    axios
+      .post(url, formData, { headers: headers })
+      .then((response) => {
+        const modal = document.getElementById("addPostModal");
+        const modalInstance = bootstrap.Modal.getInstance(modal);
+        modalInstance.hide();
+        showSuccessMessage("Post created successfully!", "success");
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      })
+      .catch((error) => {
+        if (error.response && error.response.data && error.response.data.message) {
+          showErrorMessage("Post creation failed: " + error.response.data.message);
+        } else if (error.response && error.response.data && error.response.data.errors) {
+          // Show validation errors from API
+          let apiErrors = error.response.data.errors;
+          let details = "";
+          if (apiErrors.title) details += "Title: " + apiErrors.title.join(", ") + " ";
+          if (apiErrors.body) details += "Body: " + apiErrors.body.join(", ") + " ";
+          if (apiErrors.image) details += "Image: " + apiErrors.image.join(", ") + " ";
+          showErrorMessage("Post creation failed! " + details.trim());
+        } else {
+          showErrorMessage("Post creation failed! Please try again.");
+        }
+      });
+  } else {
+    url = baseURL + "/posts/" + postId;
+    formData.append("_method", "PUT");
+    axios
+      .post(url, formData, { headers: headers })
+      .then((response) => {
+        const modal = document.getElementById("addPostModal");
+        const modalInstance = bootstrap.Modal.getInstance(modal);
+        modalInstance.hide();
+        showSuccessMessage("Post Edited successfully!", "success");
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      })
+      .catch((error) => {
+        if (error.response && error.response.data && error.response.data.message) {
+          showErrorMessage("Post creation failed: " + error.response.data.message);
+        } else if (error.response && error.response.data && error.response.data.errors) {
+          // Show validation errors from API
+          let apiErrors = error.response.data.errors;
+          let details = "";
+          if (apiErrors.title) details += "Title: " + apiErrors.title.join(", ") + " ";
+          if (apiErrors.body) details += "Body: " + apiErrors.body.join(", ") + " ";
+          if (apiErrors.image) details += "Image: " + apiErrors.image.join(", ") + " ";
+          showErrorMessage("Post Editing failed! " + details.trim());
+        } else {
+          showErrorMessage("Post Editing failed! Please try again.");
+        }
+      });
+  }
 }
 
 function getCurrentUser() {
@@ -429,6 +473,17 @@ function addComment(postId) {
         showErrorMessage("Comment creation failed! Please try again.");
       }
     });
+}
+
+function editPost(post) {
+  const postData = JSON.parse(decodeURIComponent(post));
+  document.getElementById("post-id-input").value = postData.id;
+  document.getElementById("add-post-title").value = postData.title;
+  document.getElementById("add-post-body").value = postData.body;
+  document.getElementById("add-post-btn").innerHTML = "Update";
+  document.getElementById("add-post").innerHTML = "Edit Post";
+  let postModal = new bootstrap.Modal(document.getElementById("addPostModal"), {});
+  postModal.toggle();
 }
 
 
