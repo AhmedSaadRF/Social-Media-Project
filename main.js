@@ -368,6 +368,18 @@ function getPostDetails(postId) {
       postTitleElement.innerHTML = author.username;
     }
     let commentsContent = ``;
+    let user = getCurrentUser();
+    let isMyPost = user != null && user.id == author.id;
+    let editButtonContent = "";
+    let deleteButtonContent = "";
+    if (isMyPost) {
+      editButtonContent = `
+        <button class="btn btn-sm btn-primary ms-2 float-end px-3" onclick="editPost('${encodeURIComponent(JSON.stringify(post))}')">Edit</button>
+        `;
+      deleteButtonContent = `
+        <button class="btn btn-sm btn-danger ms-2 float-end px-3" onclick="deletePost('${encodeURIComponent(JSON.stringify(post))}')">Delete</button>
+        `;
+    }
     for (const comment of comments) {
       commentsContent += `
       <div class="p-3" style="background-color: rgb(187, 187, 187);">
@@ -397,6 +409,8 @@ function getPostDetails(postId) {
           style="width: 40px; height: 40px"
         />
         <b>${author.username}</b>
+        ${editButtonContent}
+        ${deleteButtonContent}
       </div>
       <div class="card-body">
         <img src="${post.image}" alt="Post Image" class="w-100" />
