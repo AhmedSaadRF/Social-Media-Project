@@ -152,14 +152,17 @@ function setUpUI() {
   const loginBtn = document.getElementById("loginBtn");
   const registerBtn = document.getElementById("registerBtn");
   const logoutBtn = document.getElementById("logoutBtn");
+  const addPostBtn = document.getElementById("addPostBtn");
   if (token == null) {
     loginBtn.style.display = "block";
     registerBtn.style.display = "block";
     logoutBtn.style.display = "none";
+    addPostBtn.style.display = "none";
   } else {
     loginBtn.style.display = "none";
     registerBtn.style.display = "none";
     logoutBtn.style.display = "block";
+    addPostBtn.style.display = "block";
   }
 
   // Show login success alert after reload
@@ -186,6 +189,64 @@ function showLogoutMessage(message) {
     alertPlaceholder.style.display = "none";
     alertPlaceholder.innerHTML = "";
   }, 3000);
+}
+
+function addPost() {
+  const title = document.getElementById("add-post-title").value.trim();
+  const body = document.getElementById("add-post-body").value.trim();
+  const imageInput = document.getElementById("add-post-image");
+  const image = imageInput && imageInput.files.length > 0 ? imageInput.files[0] : null;
+  const url = baseURL + "/posts";
+  let errorMsg = "";
+  if (!title) {
+    errorMsg += "Title is required. ";
+  }
+  if (!body) {
+    errorMsg += "Body text is required. ";
+  }
+  if (imageInput && imageInput.required && !image) {
+    errorMsg += "Image is required. ";
+  }
+  if (errorMsg) {
+    showErrorMessage(errorMsg.trim());
+    return;
+  }
+  let formData = new FormData();
+  formData.append("title", title);
+  formData.append("body", body);
+  if (image != null) {
+    formData.append("image", image);
+  }
+  const token = localStorage.getItem("token");
+  const headers = {
+    Authorization: `Bearer ${token}`,
+  };
+  axios
+    .post(url, formData, { headers: headers })
+    .then((response) => {
+      const modal = document.getElementById("addPostModal");
+      const modalInstance = bootstrap.Modal.getInstance(modal);
+      modalInstance.hide();
+      showSuccessMessage("Post created successfully!", "success");
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000); // Wait 1.5 seconds before reloading
+    })
+    .catch((error) => {
+      if (error.response && error.response.data && error.response.data.message) {
+        showErrorMessage("Post creation failed: " + error.response.data.message);
+      } else if (error.response && error.response.data && error.response.data.errors) {
+        // Show validation errors from API
+        let apiErrors = error.response.data.errors;
+        let details = "";
+        if (apiErrors.title) details += "Title: " + apiErrors.title.join(", ") + " ";
+        if (apiErrors.body) details += "Body: " + apiErrors.body.join(", ") + " ";
+        if (apiErrors.image) details += "Image: " + apiErrors.image.join(", ") + " ";
+        showErrorMessage("Post creation failed! " + details.trim());
+      } else {
+        showErrorMessage("Post creation failed! Please try again.");
+      }
+    });
 }
 
 
