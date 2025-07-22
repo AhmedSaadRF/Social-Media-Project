@@ -32,9 +32,13 @@ function getPosts(page = 1) {
       let user = getCurrentUser();
       let isMyPost = user != null && user.id == author.id;
       let editButtonContent = "";
+      let deleteButtonContent = "";
       if (isMyPost) {
         editButtonContent = `
         <button class="btn btn-sm btn-primary ms-2 float-end px-3" onclick="editPost('${encodeURIComponent(JSON.stringify(post))}')">Edit</button>
+        `;
+        deleteButtonContent = `
+        <button class="btn btn-sm btn-danger ms-2 float-end px-3" onclick="deletePost('${encodeURIComponent(JSON.stringify(post))}')">Delete</button>
         `;
       }
       let content = `
@@ -48,6 +52,7 @@ function getPosts(page = 1) {
           />
           <b>${author.username}</b>
           ${editButtonContent}
+          ${deleteButtonContent}
         </div>
         <div class="card-body" onclick="postClicked(${post.id})" style="cursor: pointer;">
           <img src="${post.image}" alt="Post Image" class="w-100" />
@@ -486,4 +491,32 @@ function editPost(post) {
   postModal.toggle();
 }
 
+function deletePost(post) {
+  const postData = JSON.parse(decodeURIComponent(post));
+  let deletePostModal = new bootstrap.Modal(document.getElementById("deletePostModal"), {});
+  deletePostModal.toggle();
+  document.getElementById("delete-post-name").innerHTML = postData.title;
+  document.getElementById("post-id-input").value = postData.id;
+}
+
+function confirmDeletePost() {
+  const postId = document.getElementById("post-id-input").value;
+  const url = baseURL + "/posts/" + postId;
+  const token = localStorage.getItem("token");
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+  axios
+    .delete(url, { headers: headers })
+    .then((response) => {
+      showSuccessMessage("Post deleted successfully!", "success");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    })
+    .catch((error) => {
+      showErrorMessage("Post deletion failed! Please try again.");
+    });
+}
 
