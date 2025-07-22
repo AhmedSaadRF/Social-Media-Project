@@ -67,7 +67,7 @@ function getPosts(page = 1) {
         </div>
       </div>
     `;
-      
+
       const postTagsId = document.getElementById(`postTags-${post.id}`);
 
       for (const tag of post.tags) {
@@ -306,7 +306,7 @@ if (postId != null) {
   getPostDetails(postId);
 }
 
- function getPostDetails(postId) {
+function getPostDetails(postId) {
   const url = baseURL + "/posts/" + postId;
   const postTitleElement = document.getElementById("postDetailsUsername");
   axios.get(url).then((response) => {
@@ -380,10 +380,55 @@ if (postId != null) {
       <div id="comments">
         ${commentsContent}
       </div>
+
+      <div class="card-footer">
+        <form id="commentForm">
+          <div class="input-group">
+            <input type="text" class="form-control" id="commentBody" placeholder="Write a comment..." />
+            <button type="button" class="btn btn-primary" onclick="addComment(${post.id})">Send</button>
+          </div>
+        </form>
+      </div>
     </div>
   `;
     document.getElementById("postDetails").innerHTML = content;
   });
+}
+
+function addComment(postId) {
+  const commentBody = document.getElementById("commentBody").value.trim();
+  if (!commentBody) {
+    showErrorMessage("Comment is required.");
+    return;
+  }
+  const url = baseURL + "/posts/" + postId + "/comments";
+  const token = localStorage.getItem("token");
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+  const body = {
+    body: commentBody,
+  };
+  axios
+    .post(url, body, { headers: headers })
+    .then((response) => {
+      getPostDetails(postId);
+      showSuccessMessage("Comment added successfully!", "success");
+    })
+    .catch((error) => {
+      if (error.response && error.response.data && error.response.data.message) {
+        showErrorMessage("Comment creation failed: " + error.response.data.message);
+      } else if (error.response && error.response.data && error.response.data.errors) {
+        // Show validation errors from API
+        let apiErrors = error.response.data.errors;
+        let details = "";
+        if (apiErrors.body) details += "Body: " + apiErrors.body.join(", ") + " ";
+        showErrorMessage("Comment creation failed! " + details.trim());
+      } else {
+        showErrorMessage("Comment creation failed! Please try again.");
+      }
+    });
 }
 
 
