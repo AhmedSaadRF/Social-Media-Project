@@ -74,7 +74,11 @@
         <div class="modal-body">
           <form>
             <div class="mb-3">
-              <label for="recipient-name" class="col-form-label">name:</label>
+              <label for="recipient-name" class="col-form-label">Profile Image:</label>
+              <input type="file" class="form-control" id="reg-image">
+            </div>
+            <div class="mb-3">
+              <label for="recipient-name" class="col-form-label">Name:</label>
               <input type="text" class="form-control" id="reg-name">
             </div>
             <div class="mb-3">
@@ -159,9 +163,15 @@
                   data-bs-target="#registerModal">
                   Register
                 </button>
-                <button onclick="logout()" id="logoutBtn" type="button" class="btn btn-outline-danger mx-2">
-                  Logout
-                </button>
+                <!-- Logout Button -->
+                 <div class="d-flex align-items-center" style="gap: 10px;">
+                  <img src="./assets/profile.png" id="profileImage" alt="Profile Image" class="rounded-circle border border-2" style="width: 40px; height: 40px">
+                  <b id="nav-username">Ahmed_RFRF</b>
+                  <button onclick="logout()" id="logoutBtn" type="button" class="btn btn-outline-danger mx-2">
+                    Logout
+                  </button>
+                </div>
+                <!-- Logout Button -->
               </div>
               <!-- Login, Register and Logout Buttons -->
             </div>

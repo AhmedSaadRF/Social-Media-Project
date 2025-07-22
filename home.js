@@ -1,18 +1,35 @@
-setUpUI();
-
 const baseURL = "https://tarmeezacademy.com/api/v1";
+let currentPage = 1;
+let lastPage = 1;
 
-axios.get(baseURL + "/posts?limit=30").then((response) => {
-  const posts = response.data.data;
-  document.getElementById("posts").innerHTML = "";
+setUpUI();
+getPosts(currentPage);
 
-  for (const post of posts) {
-    const author = post.author;
-    let postTitle = "";
-    if (post.title != null) {
-      postTitle = post.title;
+
+
+window.addEventListener("scroll", () => {
+  const endOfPage = window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
+  if (endOfPage && currentPage < lastPage) {
+    currentPage++;
+    getPosts(currentPage);
+  }
+});
+
+function getPosts(page = 1) {
+  axios.get(baseURL + "/posts?limit=3&page=" + page).then((response) => {
+    const posts = response.data.data;
+    lastPage = response.data.meta.last_page;
+    // If first page, clear posts. Otherwise, append.
+    if (page === 1) {
+      document.getElementById("posts").innerHTML = "";
     }
-    let content = `
+    for (const post of posts) {
+      const author = post.author;
+      let postTitle = "";
+      if (post.title != null) {
+        postTitle = post.title;
+      }
+      let content = `
       <div class="card shadow rounded" style="margin-top: 30px">
         <div class="card-header">
           <img
@@ -50,22 +67,65 @@ axios.get(baseURL + "/posts?limit=30").then((response) => {
         </div>
       </div>
     `;
-    document.getElementById("posts").innerHTML += content;
-    const postTagsId = document.getElementById(`postTags-${post.id}`);
+      document.getElementById("posts").innerHTML += content;
+      const postTagsId = document.getElementById(`postTags-${post.id}`);
 
-    for (const tag of post.tags) {
-      if (tag.name == null) {
-        continue;
-      }
-      let tagsContent = `
+      for (const tag of post.tags) {
+        if (tag.name == null) {
+          continue;
+        }
+        let tagsContent = `
         <button class="btn btn-sm rounded-5" style="background-color: gray; color: white;">
           ${tag.name}
         </button>
       `;
-      postTagsId.innerHTML += tagsContent;
+        postTagsId.innerHTML += tagsContent;
+      }
     }
+  });
+}
+
+function setUpUI() {
+  const token = localStorage.getItem("token");
+  const loginBtn = document.getElementById("loginBtn");
+  const registerBtn = document.getElementById("registerBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const addPostBtn = document.getElementById("addPostBtn");
+  const profileImage = document.getElementById("profileImage");
+  const navUsername = document.getElementById("nav-username");
+  const user = getCurrentUser();
+
+  if (token == null) {
+    loginBtn.style.display = "block";
+    registerBtn.style.display = "block";
+    logoutBtn.style.display = "none";
+    addPostBtn.style.display = "none";
+    profileImage.style.display = "none";
+    navUsername.style.display = "none";
+  } else {
+    loginBtn.style.display = "none";
+    registerBtn.style.display = "none";
+    logoutBtn.style.display = "block";
+    addPostBtn.style.display = "block";
+    profileImage.src = user.profile_image;
+    navUsername.innerHTML = user.username;
   }
-});
+
+  // Show login success alert after reload
+  if (localStorage.getItem("showLoginSuccess") === "true") {
+    showSuccessMessage("Login successful!", "success");
+    localStorage.removeItem("showLoginSuccess");
+  }
+  // Show register success alert after reload
+  if (localStorage.getItem("showRegisterSuccess") === "true") {
+    showSuccessMessage("Registration successful! Welcome!", "success");
+    localStorage.removeItem("showRegisterSuccess");
+  }
+  if (localStorage.getItem("showLogoutAlert") === "true") {
+    showLogoutMessage("You have been logged out successfully.");
+    localStorage.removeItem("showLogoutAlert");
+  }
+}
 
 function login() {
   const username = document.getElementById("recipient-name").value;
@@ -97,14 +157,17 @@ function register() {
   const name = document.getElementById("reg-name").value;
   const username = document.getElementById("reg-username").value;
   const password = document.getElementById("reg-password").value;
+  const image = document.getElementById("reg-image").files[0];
   const url = baseURL + "/register";
-  const params = {
-    name: name,
-    username: username,
-    password: password,
-  };
+  let formData = new FormData();
+  formData.append("name", name);
+  formData.append("username", username);
+  formData.append("password", password);
+  if (image != null) {
+    formData.append("image", image);
+  }
   axios
-    .post(url, params)
+    .post(url, formData)
     .then((response) => {
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
@@ -147,39 +210,6 @@ function showErrorMessage(message) {
   }, 3000);
 }
 
-function setUpUI() {
-  const token = localStorage.getItem("token");
-  const loginBtn = document.getElementById("loginBtn");
-  const registerBtn = document.getElementById("registerBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const addPostBtn = document.getElementById("addPostBtn");
-  if (token == null) {
-    loginBtn.style.display = "block";
-    registerBtn.style.display = "block";
-    logoutBtn.style.display = "none";
-    addPostBtn.style.display = "none";
-  } else {
-    loginBtn.style.display = "none";
-    registerBtn.style.display = "none";
-    logoutBtn.style.display = "block";
-    addPostBtn.style.display = "block";
-  }
-
-  // Show login success alert after reload
-  if (localStorage.getItem("showLoginSuccess") === "true") {
-    showSuccessMessage("Login successful!", "success");
-    localStorage.removeItem("showLoginSuccess");
-  }
-  // Show register success alert after reload
-  if (localStorage.getItem("showRegisterSuccess") === "true") {
-    showSuccessMessage("Registration successful! Welcome!", "success");
-    localStorage.removeItem("showRegisterSuccess");
-  }
-  if (localStorage.getItem("showLogoutAlert") === "true") {
-    showLogoutMessage("You have been logged out successfully.");
-    localStorage.removeItem("showLogoutAlert");
-  }
-}
 
 function showLogoutMessage(message) {
   const alertPlaceholder = document.getElementById("logoutAlert");
@@ -219,6 +249,7 @@ function addPost() {
   }
   const token = localStorage.getItem("token");
   const headers = {
+    "Content-Type": "multipart/form-data",
     Authorization: `Bearer ${token}`,
   };
   axios
@@ -247,6 +278,15 @@ function addPost() {
         showErrorMessage("Post creation failed! Please try again.");
       }
     });
+}
+
+function getCurrentUser() {
+  let user = null;
+  const storageUser = localStorage.getItem("user");
+  if (storageUser != null) {
+    user = JSON.parse(storageUser);
+  }
+  return user;
 }
 
 
