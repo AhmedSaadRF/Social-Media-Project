@@ -165,4 +165,48 @@ function setUI() {
     </div>
   </div>
 `
+  document.getElementById("profileMainContainer").innerHTML = `
+    <div class="d-flex justify-content-center mt-5">
+      <div class="col-9">
+        <!-- Profile -->
+        <div class="card shadow rounded">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-2">
+                <img id="main-info-profile-image" src="./assets/profile-user.png" alt="Profile Image"
+                  style="width: 120px; height: 120px; border-radius: 50%;">
+              </div>
+
+              <div id="main-info" class="col-4 d-flex flex-column justify-content-evenly" style="font-weight: 900;">
+                <div id="main-info-email" style="font-weight: 500; font-size: 20px;">example@gmail.com</div>
+                <div id="main-info-name" style="font-weight: 500; font-size: 20px;">Ahmed</div>
+                <div id="main-info-username" style="font-weight: 500; font-size: 20px;">Ahmed_RFRF</div>
+              </div>
+
+              <div class="col-4 d-flex flex-column justify-content-evenly">
+                <div style="color: rgb(172, 172, 172); font-weight: 100;">
+                  <span style="font-size: 50px; color: black;" id="main-info-posts-count">13</span> Posts
+                </div>
+                <div style="color: rgb(172, 172, 172); font-weight: 100;">
+                  <span style="font-size: 50px; color: black;" id="main-info-comments-count">20</span> Coments
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Profile -->
+
+        <!-- User -->
+        <div class="row mt-5">
+          <h1><span id="main-info-page-username">RFRF</span> Posts</h1>
+        </div>
+        <!-- User -->
+
+        <!-- Posts -->
+        <div class="row" id="userPosts">
+        </div>
+        <!-- Posts -->
+      </div>
+    </div>
+  `
 }
