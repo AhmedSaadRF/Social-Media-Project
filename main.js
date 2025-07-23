@@ -7,16 +7,24 @@ getPosts(currentPage);
 
 
 
+
+let isLoadingPosts = false;
 window.addEventListener("scroll", () => {
-  const endOfPage = window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
-  if (endOfPage && currentPage < lastPage) {
+  // Use Math.ceil to avoid floating point issues
+  const nearBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.body.offsetHeight - 2;
+  if (nearBottom && currentPage < lastPage && !isLoadingPosts) {
+    isLoadingPosts = true;
     currentPage++;
-    getPosts(currentPage);
+    getPosts(currentPage).finally(() => {
+      isLoadingPosts = false;
+    });
   }
 });
 
 function getPosts(page = 1) {
-  axios.get(baseURL + "/posts?limit=3&page=" + page).then((response) => {
+  toggleLooder(true);
+  return axios.get(baseURL + "/posts?limit=10&page=" + page).then((response) => {
+    toggleLooder(false);
     const posts = response.data.data;
     lastPage = response.data.meta.last_page;
     // If first page, clear posts. Otherwise, append.
@@ -158,9 +166,31 @@ function login() {
     username: username,
     password: password,
   };
+  if (username == "" || password == "") {
+    showErrorMessage("Please fill in all fields.");
+    return;
+  }
+  if (username.length < 3) {
+    showErrorMessage("Username must be at least 3 characters.");
+    return;
+  }
+  if (password.length < 3) {
+    showErrorMessage("Password must be at least 3 characters.");
+    return;
+  }
+  if (username.includes(" ")) {
+    showErrorMessage("Username cannot contain spaces.");
+    return;
+  }
+  if (password.includes(" ")) {
+    showErrorMessage("Password cannot contain spaces.");
+    return;
+  }
+  toggleLooder(true);
   axios
     .post(url, params)
     .then((response) => {
+      toggleLooder(false);
       const token = response.data.token;
       const user = response.data.user;
       localStorage.setItem("token", token);
@@ -172,6 +202,7 @@ function login() {
       window.location.reload();
     })
     .catch((error) => {
+      toggleLooder(false);
       showErrorMessage("Login failed! Please check your username and password.");
     });
 }
@@ -189,9 +220,35 @@ function register() {
   if (image != null) {
     formData.append("image", image);
   }
+  if (name == "" || username == "" || password == "") {
+    showErrorMessage("Please fill in all fields.");
+    return;
+  }
+  if (name.length < 3) {
+    showErrorMessage("Name must be at least 3 characters.");
+    return;
+  }
+  if (username.length < 3) {
+    showErrorMessage("Username must be at least 3 characters.");
+    return;
+  }
+  if (password.length < 3) {
+    showErrorMessage("Password must be at least 3 characters.");
+    return;
+  }
+  if (username.includes(" ")) {
+    showErrorMessage("Username cannot contain spaces.");
+    return;
+  }
+  if (password.includes(" ")) {
+    showErrorMessage("Password cannot contain spaces.");
+    return;
+  }
+  toggleLooder(true);
   axios
     .post(url, formData)
     .then((response) => {
+      toggleLooder(false);
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
       const modal = document.getElementById("registerModal");
@@ -201,6 +258,7 @@ function register() {
       window.location.reload();
     })
     .catch((error) => {
+      toggleLooder(false);
       showErrorMessage("Registration failed! Please try again.");
     });
 }
@@ -280,9 +338,11 @@ function addPost() {
   };
   if (isCreate) {
     url = baseURL + "/posts";
+    toggleLooder(true);
     axios
       .post(url, formData, { headers: headers })
       .then((response) => {
+        toggleLooder(false);
         const modal = document.getElementById("addPostModal");
         const modalInstance = bootstrap.Modal.getInstance(modal);
         modalInstance.hide();
@@ -292,6 +352,7 @@ function addPost() {
         }, 2000);
       })
       .catch((error) => {
+        toggleLooder(false);
         if (error.response && error.response.data && error.response.data.message) {
           showErrorMessage("Post creation failed: " + error.response.data.message);
         } else if (error.response && error.response.data && error.response.data.errors) {
@@ -309,9 +370,11 @@ function addPost() {
   } else {
     url = baseURL + "/posts/" + postId;
     formData.append("_method", "PUT");
+    toggleLooder(true);
     axios
       .post(url, formData, { headers: headers })
       .then((response) => {
+        toggleLooder(false);
         const modal = document.getElementById("addPostModal");
         const modalInstance = bootstrap.Modal.getInstance(modal);
         modalInstance.hide();
@@ -321,6 +384,7 @@ function addPost() {
         }, 2000);
       })
       .catch((error) => {
+        toggleLooder(false);
         if (error.response && error.response.data && error.response.data.message) {
           showErrorMessage("Post creation failed: " + error.response.data.message);
         } else if (error.response && error.response.data && error.response.data.errors) {
@@ -360,7 +424,9 @@ if (postId != null) {
 function getPostDetails(postId) {
   const url = baseURL + "/posts/" + postId;
   const postTitleElement = document.getElementById("postDetailsUsername");
+  toggleLooder(true);
   axios.get(url).then((response) => {
+    toggleLooder(false);
     const post = response.data.data;
     const author = post.author;
     const comments = post.comments;
@@ -477,13 +543,16 @@ function addComment(postId) {
   const body = {
     body: commentBody,
   };
+  toggleLooder(true);
   axios
     .post(url, body, { headers: headers })
     .then((response) => {
+      toggleLooder(false);
       getPostDetails(postId);
       showSuccessMessage("Comment added successfully!", "success");
     })
     .catch((error) => {
+      toggleLooder(false);
       if (error.response && error.response.data && error.response.data.message) {
         showErrorMessage("Comment creation failed: " + error.response.data.message);
       } else if (error.response && error.response.data && error.response.data.errors) {
@@ -525,15 +594,18 @@ function confirmDeletePost() {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
   };
+  toggleLooder(true);
   axios
     .delete(url, { headers: headers })
     .then((response) => {
+      toggleLooder(false);
       showSuccessMessage("Post deleted successfully!", "success");
       setTimeout(() => {
         window.location.reload();
       }, 1000);
     })
     .catch((error) => {
+      toggleLooder(false);
       showErrorMessage("Post deletion failed! Please try again.");
     });
 }
@@ -549,7 +621,9 @@ function getUserFromId() {
   if (id == null) {
     return;
   }
+  toggleLooder(true);
   axios.get(baseURL + "/users/" + id).then((response) => {
+    toggleLooder(false);
     const user = response.data.data;
     if (user.email != null) {
       document.getElementById("main-info-email").innerHTML = user.email;
@@ -578,7 +652,9 @@ function getUserPosts() {
   if (id == null) {
     return;
   }
+  toggleLooder(true);
   axios.get(baseURL + "/users/" + id + "/posts").then((response) => {
+    toggleLooder(false);
     const posts = response.data.data;
     for (const post of posts) {
       const author = post.author;
@@ -672,4 +748,12 @@ function gotomyprofile() {
     return;
   }
   window.location.href = "./profile.html?user=" + user.id;
+}
+
+function toggleLooder(show = true) {
+  if (show) {
+    document.getElementById("looder").style.visibility = "visible";
+  } else {
+    document.getElementById("looder").style.visibility = "hidden";
+  }
 }

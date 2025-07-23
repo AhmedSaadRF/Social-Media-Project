@@ -208,5 +208,5 @@ function setUI() {
         <!-- Posts -->
       </div>
     </div>
-  `
+  `;
 }
