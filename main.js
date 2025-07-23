@@ -149,8 +149,8 @@ function setUpUI() {
 }
 
 function login() {
-  const username = document.getElementById("recipient-name").value;
-  const password = document.getElementById("message-text").value;
+  const username = document.getElementById("login-username").value;
+  const password = document.getElementById("login-password").value;
   const url = baseURL + "/login";
   const params = {
     username: username,
