@@ -28,7 +28,7 @@ function setUI() {
   </div>
 `
 
-document.getElementById("registerModal").innerHTML = `
+  document.getElementById("registerModal").innerHTML = `
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -63,7 +63,7 @@ document.getElementById("registerModal").innerHTML = `
   </div>
 `
 
-document.getElementById("addPostModal").innerHTML = `
+  document.getElementById("addPostModal").innerHTML = `
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -94,7 +94,7 @@ document.getElementById("addPostModal").innerHTML = `
   </div>
 `
 
-document.getElementById("deletePostModal").innerHTML = `
+  document.getElementById("deletePostModal").innerHTML = `
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -109,8 +109,16 @@ document.getElementById("deletePostModal").innerHTML = `
     </div>
   </div>
 `
-
-document.getElementById("navbarContainer").innerHTML = `
+  function getCurrentUser() {
+    let user = null;
+    const storageUser = localStorage.getItem("user");
+    if (storageUser != null) {
+      user = JSON.parse(storageUser);
+    }
+    return user;
+  }
+  const user = getCurrentUser();
+  document.getElementById("navbarContainer").innerHTML = `
   <div class="d-flex justify-content-center">
     <div class="col-9">
       <nav class="navbar navbar-expand-lg bg-light shadow rounded pt-3">
@@ -126,7 +134,7 @@ document.getElementById("navbarContainer").innerHTML = `
                 <a class="nav-link active" aria-current="page" href="./home.html">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="./profile.html">Profile</a>
+                <a class="nav-link" href="./profile.html?user=${user ? user.id : ''}">Profile</a>
               </li>
             </ul>
 
@@ -142,8 +150,8 @@ document.getElementById("navbarContainer").innerHTML = `
               </button>
               <!-- Logout Button -->
                 <div class="d-flex align-items-center" style="gap: 10px;">
-                <img src="./assets/profile.png" id="profileImage" onclick="goToProfile()" alt="Profile Image" class="rounded-circle border border-2" style="width: 40px; height: 40px; cursor: pointer;">
-                <b id="nav-username" onclick="goToProfile()" style="cursor: pointer;">Ahmed_RFRF</b>
+                <img src="./assets/profile.png" id="profileImage" onclick="gotomyprofile()" alt="Profile Image" class="rounded-circle border border-2" style="width: 40px; height: 40px; cursor: pointer;">
+                <b id="nav-username" onclick="gotomyprofile()" style="cursor: pointer;">Ahmed_RFRF</b>
                 <button onclick="logout()" id="logoutBtn" type="button" class="btn btn-outline-danger mx-2">
                   Logout
                 </button>

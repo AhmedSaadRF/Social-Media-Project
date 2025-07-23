@@ -44,13 +44,15 @@ function getPosts(page = 1) {
       let content = `
       <div class="card shadow rounded" style="margin-top: 30px">
         <div class="card-header">
-          <img
+          <span style="cursor: pointer;" onclick="userClicked(${author.id})">
+            <img
             src="${author.profile_image}"
             alt="Profile Image"
             class="rounded-circle border border-2"
             style="width: 40px; height: 40px"
-          />
-          <b>${author.username}</b>
+            />
+            <b>${author.username}</b>
+          </span>
           ${editButtonContent}
           ${deleteButtonContent}
         </div>
@@ -402,13 +404,15 @@ function getPostDetails(postId) {
     let content = `
     <div class="card shadow rounded">
       <div class="card-header">
-        <img
+        <span style="cursor: pointer;" onclick="userClicked(${author.id})">
+          <img
           src="${author.profile_image}"
           alt="Profile Image"
           class="rounded-circle border border-2"
           style="width: 40px; height: 40px"
-        />
-        <b>${author.username}</b>
+          />
+          <b>${author.username}</b>
+        </span>
         ${editButtonContent}
         ${deleteButtonContent}
       </div>
@@ -538,3 +542,134 @@ function goToProfile() {
   window.location.href = "./profile.html";
 }
 
+
+function getUserFromId() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get("user");
+  if (id == null) {
+    return;
+  }
+  axios.get(baseURL + "/users/" + id).then((response) => {
+    const user = response.data.data;
+    if (user.email != null) {
+      document.getElementById("main-info-email").innerHTML = user.email;
+    }
+    document.getElementById("main-info-name").innerHTML = user.name;
+    document.getElementById("main-info-username").innerHTML = user.username;
+    document.getElementById("main-info-posts-count").innerHTML = user.posts_count;
+    document.getElementById("main-info-comments-count").innerHTML = user.comments_count;
+    document.getElementById("main-info-page-username").innerHTML = user.username;
+    const profileImgElem = document.getElementById("main-info-profile-image");
+    if (user.profile_image == null) {
+      profileImgElem.src = "assets/profile-user.png";
+    } else {
+      profileImgElem.src = user.profile_image;
+      profileImgElem.onerror = function() {
+        this.onerror = null; // Prevent infinite loop
+        this.src = "assets/profile-user.png";
+      };
+    }
+  });
+}
+
+function getUserPosts() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get("user");
+  if (id == null) {
+    return;
+  }
+  axios.get(baseURL + "/users/" + id + "/posts").then((response) => {
+    const posts = response.data.data;
+    for (const post of posts) {
+      const author = post.author;
+      let postTitle = "";
+      if (post.title != null) {
+        postTitle = post.title;
+      }
+      let user = getCurrentUser();
+      let isMyPost = user != null && user.id == author.id;
+      let editButtonContent = "";
+      let deleteButtonContent = "";
+      if (isMyPost) {
+        editButtonContent = `
+        <button class="btn btn-sm btn-primary ms-2 float-end px-3" onclick="editPost('${encodeURIComponent(JSON.stringify(post))}')">Edit</button>
+        `;
+        deleteButtonContent = `
+        <button class="btn btn-sm btn-danger ms-2 float-end px-3" onclick="deletePost('${encodeURIComponent(JSON.stringify(post))}')">Delete</button>
+        `;
+      }
+      let content = `
+      <div class="card shadow rounded" style="margin-top: 30px">
+        <div class="card-header">
+          <span style="cursor: pointer;" onclick="userClicked(${author.id})">
+            <img
+            src="${author.profile_image}"
+            alt="Profile Image"
+            class="rounded-circle border border-2"
+            style="width: 40px; height: 40px"
+            />
+            <b>${author.username}</b>
+          </span>
+          ${editButtonContent}
+          ${deleteButtonContent}
+        </div>
+        <div class="card-body" onclick="postClicked(${post.id})" style="cursor: pointer;">
+          <img src="${post.image}" alt="Post Image" class="w-100" />
+          <h6 class="mt-1" style="color: rgb(193, 193, 193)">
+            ${post.created_at}
+          </h6>
+          <h5>${postTitle}</h5>
+          <p>${post.body}</p>
+          <hr />
+          <div style="display: flex; align-items: center;">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-pen"
+              viewBox="0 0 16 16"
+            >
+              <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z" />
+            </svg>
+            <span style="display: flex; align-items: center;">
+              (${post.comments_count}) Comments
+              <span style="margin-left: 10px; display: flex; gap: 5px;" id="userPostTags-${post.id}"></span>
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+
+      const postTagsId = document.getElementById(`userPostTags-${post.id}`);
+      if (postTagsId) {
+        for (const tag of post.tags) {
+          if (tag.name == null) continue;
+          let tagsContent = `
+            <button class="btn btn-sm rounded-5" style="background-color: gray; color: white;">
+              ${tag.name}
+            </button>
+          `;
+          postTagsId.innerHTML += tagsContent;
+        }
+      }
+      if (document.getElementById("userPosts") != null) {
+        document.getElementById("userPosts").innerHTML += content;
+      }
+    }
+  });
+}
+
+
+function userClicked(userId) {
+  window.location.href = "./profile.html?user=" + userId;
+}
+
+
+function gotomyprofile() {
+  const user = getCurrentUser();
+  if (user == null) {
+    return;
+  }
+  window.location.href = "./profile.html?user=" + user.id;
+}
