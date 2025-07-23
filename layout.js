@@ -123,7 +123,7 @@ function setUI() {
     <div class="col-9">
       <nav class="navbar navbar-expand-lg bg-light shadow rounded pt-3">
         <div class="container-fluid">
-          <a class="navbar-brand" href="./home.html">RFRF</a>
+          <a class="navbar-brand" href="./index.html">RFRF</a>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -131,7 +131,7 @@ function setUI() {
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="./home.html">Home</a>
+                <a class="nav-link active" aria-current="page" href="./index.html">Home</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="./profile.html?user=${user ? user.id : ''}">Profile</a>
