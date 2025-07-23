@@ -12,11 +12,11 @@ function setUI() {
         <form>
           <div class="mb-3">
             <label for="login-username" class="col-form-label">Username:</label>
-            <input type="text" class="form-control" id="login-username" value="Ahmed_RFRF_111">
+            <input type="text" class="form-control" id="login-username" value="">
           </div>
           <div class="mb-3">
             <label for="login-password" class="col-form-label">Password:</label>
-            <input type="password" class="form-control" id="login-password" value="123456">
+            <input type="password" class="form-control" id="login-password" value="">
           </div>
         </form>
       </div>
